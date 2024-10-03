@@ -125,6 +125,13 @@ li:hover {
 	text-align: center;
 	margin-bottom: 1em;
 }
+.div-container {
+	display: flex;
+	width: 585px;
+	justify-content: space-around;
+	margin: 0 auto;
+}
+
 .gallery {
 	width: 100%;
 	display: grid;
