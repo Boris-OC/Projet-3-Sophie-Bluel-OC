@@ -127,9 +127,24 @@ li:hover {
 }
 .div-container {
 	display: flex;
-	width: 585px;
-	justify-content: space-around;
-	margin: 0 auto;
+	width: 50%;
+	min-width: 50%;
+	justify-content: space-evenly;
+	margin: 35px auto;
+}
+
+.div-container > * {
+	padding: 10px;
+	border: 1px solid #1D6154;
+	border-radius: 25px;
+	font-family: 'Syne';
+	color: #1D6154;
+	cursor: pointer;
+}
+
+.div-container > *:hover {
+	background-color: #1D6154;
+	color: white;
 }
 
 .gallery {
