@@ -126,6 +126,7 @@ li:hover {
 	margin-bottom: 1em;
 }
 .div-container {
+	min-width: 550px;
 	display: flex;
 	width: 50%;
 	min-width: 50%;
@@ -134,7 +135,7 @@ li:hover {
 }
 
 .div-container > * {
-	padding: 10px;
+	padding: 10px 20px;
 	border: 1px solid #1D6154;
 	border-radius: 25px;
 	font-family: 'Syne';
