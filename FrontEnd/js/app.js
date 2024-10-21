@@ -22,13 +22,22 @@ async function getWorks(idCategory) {
   }
 }
 
-getWorks(); // Appel initial sans filtre
+getWorks(); 
 
 function displayWork(work) {
   const figure = document.createElement("figure");
-  figure.innerHTML = `<img src="${work.imageUrl}" alt="${work.title}">
-                      <figcaption>${work.title}</figcaption>`;
-  document.querySelector(".gallery").append(figure);
+  
+  const img = document.createElement("img");
+  img.src = work.imageUrl;
+  img.alt = work.title;
+  
+  const figcaption = document.createElement("figcaption");
+  figcaption.textContent = work.title;
+
+  figure.appendChild(img);
+  figure.appendChild(figcaption);
+  
+  document.querySelector(".gallery").appendChild(figure);
 }
 
 async function getCategories() {
