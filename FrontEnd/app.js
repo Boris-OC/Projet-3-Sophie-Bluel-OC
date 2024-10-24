@@ -76,3 +76,14 @@ function setFilter(data) {
   
   document.querySelector(".div-container").appendChild(div);
 }
+
+function displayAdminMode() {
+  if (sessionStorage.authToken) {
+    console.log("ok");
+    const editBanner = document.createElement("div");
+    editBanner.ClassName = 'mode-edition';
+    editBanner.innerHTML=
+     '<p><"fa-regular fa-pen-to-square"></i>Mode édition</p>';
+    document.body.prepend(editBanner);
+  }
+}

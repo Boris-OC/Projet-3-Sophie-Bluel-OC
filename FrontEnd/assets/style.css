@@ -53,6 +53,30 @@ body {
 	font-family: 'Work Sans' ;
 	font-size: 14px;
 }
+.mode-edition {
+	font-family: 'Work Sans';
+	flex-direction: row;
+	justify-content: center;
+	align-items: center;
+	width: 100%;
+	background-color: black;
+	gap: 20px;
+	height: 50px;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+.logo-edition {
+	display: flex;
+	flex-direction: row;
+	color: #FFFFFF;
+	font-size: 16px;
+	gap: 10px;
+	justify-content: center;
+	margin-top: 17px;
+}
+
 header {
 	display: flex;
 	justify-content: space-between;
@@ -117,7 +141,6 @@ li:hover {
 #introduction h2 {
 	margin-bottom: 1em;
 }
-
 #introduction p {
 	margin-bottom: 0.5em;
 }
