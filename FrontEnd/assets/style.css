@@ -77,6 +77,10 @@ body {
 	margin-top: 17px;
 }
 
+.hidden {
+	display: none;
+}
+
 header {
 	display: flex;
 	justify-content: space-between;

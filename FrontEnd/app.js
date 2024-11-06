@@ -78,12 +78,25 @@ function setFilter(data) {
 }
 
 function displayAdminMode() {
+  const modeEdition = document.querySelector('.mode-edition');
   if (sessionStorage.authToken) {
+    modeEdition.classList.remove('hidden')
     console.log("ok");
     const editBanner = document.createElement("div");
-    editBanner.ClassName = 'mode-edition';
-    editBanner.innerHTML=
-     '<p><"fa-regular fa-pen-to-square"></i>Mode édition</p>';
+    editBanner.className = 'mode-edition';
+    editBanner.innerHTML = '<p><i class="fa-regular fa-pen-to-square"></i> Mode édition</p>';
     document.body.prepend(editBanner);
   }
+}
+if (document.readyState === "complete" || document.readyState === "loaded"){
+  displayAdminMode()
+} else {
+  document.addEventListener('DOMContentLoaded', displayAdminMode);
+}
+
+//Test avec Patxi
+const h1 = document.querySelector('h1');
+h1.addEventListener('click', onTitleClick.bind(h1, false))
+function onTitleClick(admin, e){
+  console.log("statut admin:", admin, e.target, this)
 }
