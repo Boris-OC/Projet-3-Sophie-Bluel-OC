@@ -21,18 +21,30 @@ async function fetchWorks(filter) {
   document.querySelector(".modal-gallery").innerHTML = "";
 
   try {
+    // Récupérer les œuvres depuis l'API
     const response = await fetch(`${apiUrl}/works`);
     if (!response.ok) {
       throw new Error(`Response status: ${response.status}`);
     }
     const works = await response.json();
-    const filteredWorks = filter ? works.filter(work => work.categoryId === filter) : works;
 
+    let filteredWorks; // Déclaration de la variable pour les œuvres filtrées
+
+    if (filter) {
+      // Si un filtre est appliqué (une catégorie spécifique)
+      filteredWorks = works.filter(work => work.categoryId === filter);
+    } else {
+      // Si aucun filtre n'est appliqué, on prend toutes les œuvres
+      filteredWorks = works;
+    }
+
+    // Afficher les œuvres filtrées ou toutes les œuvres
     filteredWorks.forEach(work => {
       createGalleryFigure(work);
       createModalFigure(work);
     });
 
+    // Ajouter les gestionnaires d'événements pour les icônes de suppression
     const trashIcons = document.querySelectorAll(".fa-trash-can");
     trashIcons.forEach(icon => icon.addEventListener("click", deleteWork));
   } catch (error) {
@@ -68,7 +80,7 @@ async function fetchCategories() {
     }
 
     const categories = await response.json();
-    categories.forEach(category => createFilter(category));
+    categories.forEach(category => createFilter(category)); // Crée un filtre pour chaque catégorie
   } catch (error) {
     console.error(error.message);
   }
@@ -78,9 +90,9 @@ async function fetchCategories() {
 function createFilter(category) {
   const filterDiv = document.createElement("div");
   filterDiv.className = category.id;
-  filterDiv.addEventListener("click", () => fetchWorks(category.id));
+  filterDiv.addEventListener("click", () => fetchWorks(category.id)); // Filtrer les œuvres par catégorie
   filterDiv.addEventListener("click", toggleFilter);
-  document.querySelector(".tous").addEventListener("click", toggleFilter);
+  document.querySelector(".tous").addEventListener("click", toggleFilter); // Afficher toutes les œuvres
   filterDiv.innerHTML = `${category.name}`;
   document.querySelector(".div-container").append(filterDiv);
 }
@@ -94,33 +106,35 @@ function toggleFilter(event) {
 
 document.querySelector(".tous").addEventListener("click", () => fetchWorks());
 
+//---------------------------------------------------------PARTIE POST DELETE MODAL-------------------------------------------------------------
+
 // Utilisateur authentifié
 function checkAdminMode() {
-  if (sessionStorage.authToken) {
-    document.querySelector(".div-container").style.display = "none";
-    document.querySelector(".js-modal-2").style.display = "block";
+  if (sessionStorage.authToken) { // Si un token d'authentification est présent
+    document.querySelector(".div-container").style.display = "none"; // Masquer le filtre
+    document.querySelector(".js-modal-2").style.display = "block"; // Afficher le mode édition
     document.querySelector(".gallery").style.margin = "30px 0 0 0";
     const editBanner = document.createElement("div");
     editBanner.className = "edit";
     editBanner.innerHTML = '<p><a href="#modal1" class="js-modal"><i class="fa-regular fa-pen-to-square"></i>Mode édition</a></p>';
-    document.body.prepend(editBanner);
-    document.querySelector(".log-button").textContent = "logout";
+    document.body.prepend(editBanner); // Ajouter un lien pour activer le mode édition
+    document.querySelector(".log-button").textContent = "logout"; // Mettre à jour le bouton de déconnexion
     document.querySelector(".log-button").addEventListener("click", () => {
-      sessionStorage.removeItem("authToken");
+      sessionStorage.removeItem("authToken"); // Supprimer le token pour se déconnecter
     });
   }
 }
 
-// MODALE
+// Gestion des modales
 let activeModal = null;
-const focusableElements = "button, a, input, textarea";
+const focusableElements = "button, a, input, textarea"; // Éléments qui peuvent être focus dans la modale
 let focusableItems = [];
 
 const openModal = function (event) {
   event.preventDefault();
   activeModal = document.querySelector(event.target.getAttribute("href"));
   focusableItems = Array.from(activeModal.querySelectorAll(focusableElements));
-  focusableItems[0].focus();
+  focusableItems[0].focus(); // Mettre le focus sur le premier élément de la modale
   activeModal.style.display = null;
   activeModal.removeAttribute("aria-hidden");
   activeModal.setAttribute("aria-modal", "true");
@@ -142,29 +156,29 @@ const closeModal = function (event) {
 };
 
 const stopPropagation = function (event) {
-  event.stopPropagation();
+  event.stopPropagation(); // Empêcher la propagation de l'événement de fermeture de la modale
 };
 
 const focusInModal = function (event) {
   event.preventDefault();
   let index = focusableItems.findIndex(item => item === activeModal.querySelector(":focus"));
-  index += event.shiftKey ? -1 : 1;
+  index += event.shiftKey ? -1 : 1; // Passer à l'élément suivant ou précédent
 
   if (index >= focusableItems.length) {
-    index = 0;
+    index = 0; // Revenir au premier élément si on atteint la fin
   } else if (index < 0) {
-    index = focusableItems.length - 1;
+    index = focusableItems.length - 1; // Revenir au dernier élément si on est au début
   }
 
-  focusableItems[index].focus();
+  focusableItems[index].focus(); // Mettre le focus sur l'élément suivant
 };
 
 window.addEventListener("keydown", function (event) {
   if (event.key === "Escape" || event.key === "Esc") {
-    closeModal(event);
+    closeModal(event); // Fermer la modale avec la touche "Échap"
   }
   if (event.key === "Tab" && activeModal !== null) {
-    focusInModal(event);
+    focusInModal(event); // Permet de naviguer avec Tab dans la modale
   }
 });
 
@@ -178,6 +192,16 @@ async function deleteWork(event) {
   const workId = event.srcElement.id;
   const token = sessionStorage.authToken;
 
+  if (!token) {
+    alert("Vous devez être connecté pour supprimer une œuvre.");
+    return;
+  }
+
+  const confirmDeletion = confirm("Êtes-vous sûr de vouloir supprimer cette œuvre ?");
+  if (!confirmDeletion) {
+    return;
+  }
+
   try {
     const response = await fetch(`${apiUrl}/works/${workId}`, {
       method: "DELETE",
@@ -189,14 +213,22 @@ async function deleteWork(event) {
     if (response.status === 401 || response.status === 500) {
       const errorBox = document.createElement("div");
       errorBox.className = "error-login";
-      errorBox.innerHTML = "Il y a eu une erreur";
+      errorBox.innerHTML = "Il y a eu une erreur lors de la suppression de l'œuvre.";
       document.querySelector(".modal-button-container").prepend(errorBox);
+      return;
     }
+
+    const workElement = document.getElementById(workId);
+    if (workElement) {
+      workElement.remove();
+    }
+
+    alert("L'œuvre a été supprimée avec succès !");
   } catch (error) {
     console.error("Erreur lors de la suppression:", error);
+    alert("Une erreur est survenue lors de la suppression de l'œuvre. Veuillez réessayer.");
   }
 }
-
 // Toggle entre les deux modales
 function toggleModal() {
   const galleryModal = document.querySelector(".gallery-modal");
@@ -216,10 +248,11 @@ function setupPictureSubmission() {
   const imgPreview = document.createElement("img");
   const fileInput = document.getElementById("file");
   let file;
-  fileInput.style.display = "none";
+  fileInput.style.display = "none"; // Cacher le champ d'input de fichier
   fileInput.addEventListener("change", function (event) {
-    file = event.target.files[0];
-    const maxFileSize = 4 * 1024 * 1024;
+    file = event.target.files[0]; // Récupérer le fichier sélectionné
+
+    const maxFileSize = 4 * 1024 * 1024; // 4 Mo en octets
 
     if (file && (file.type === "image/jpeg" || file.type === "image/png")) {
       if (file.size > maxFileSize) {
@@ -228,11 +261,11 @@ function setupPictureSubmission() {
       }
       const reader = new FileReader();
       reader.onload = (e) => {
-        imgPreview.src = e.target.result;
+        imgPreview.src = e.target.result; // Prévisualiser l'image
         imgPreview.alt = "Uploaded Photo";
         document.getElementById("photo-container").appendChild(imgPreview);
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(file); // Lire l'image en tant que données URL
       document.querySelectorAll(".picture-loaded").forEach(e => (e.style.display = "none"));
     } else {
       alert("Veuillez sélectionner une image au format JPG ou PNG.");
@@ -244,19 +277,19 @@ function setupPictureSubmission() {
   let selectedCategoryId = "1";
 
   document.getElementById("category").addEventListener("change", function () {
-    selectedCategoryId = this.value;
+    selectedCategoryId = this.value; // Récupérer la catégorie sélectionnée
   });
 
   titleInput.addEventListener("input", function () {
-    titleInputValue = titleInput.value;
+    titleInputValue = titleInput.value; // Récupérer le titre de l'image
   });
 
   const addPictureForm = document.getElementById("picture-form");
 
   addPictureForm.addEventListener("submit", async (event) => {
-    event.preventDefault();
+    event.preventDefault(); // Empêcher la soumission du formulaire
     const hasImage = document.querySelector("#photo-container").firstChild;
-    if (hasImage && titleInputValue) {
+    if (hasImage && titleInputValue) { // Vérifier que l'image et le titre sont renseignés
       const formData = new FormData();
       formData.append("image", file);
       formData.append("title", titleInputValue);
@@ -274,21 +307,18 @@ function setupPictureSubmission() {
         headers: {
           Authorization: "Bearer " + token,
         },
-        body: formData,
+        body: formData, // Envoyer le fichier, le titre et la catégorie
       });
 
       if (response.status === 201) {
-        // Si la photo a été ajoutée avec succès
         const newWork = await response.json();
-        // Ajout immédiat de la photo à la galerie
         createGalleryFigure(newWork);
         createModalFigure(newWork);
 
-        // Fermer la modal et réinitialiser les champs
-        toggleModal();
-        document.getElementById("file").value = "";  // Réinitialiser le champ du fichier
-        document.getElementById("title").value = "";  // Réinitialiser le titre
-        document.getElementById("photo-container").innerHTML = "";  // Réinitialiser la prévisualisation de l'image
+        toggleModal(); // Fermer la modale
+        document.getElementById("file").value = "";
+        document.getElementById("title").value = "";
+        document.getElementById("photo-container").innerHTML = "";
       } else {
         const errorText = await response.text();
         console.error("Erreur : ", errorText);
