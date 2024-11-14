@@ -15,6 +15,9 @@ const closeModalBtn = document.querySelector(".js-modal-back");
 addPhotoBtn.addEventListener("click", toggleModal);
 closeModalBtn.addEventListener("click", toggleModal);
 
+// Liste des œuvres
+let worksList = [];
+
 // Récupération des travaux avec options de filtrage
 async function fetchWorks(filter) {
   document.querySelector(".gallery").innerHTML = "";
@@ -26,16 +29,13 @@ async function fetchWorks(filter) {
     if (!response.ok) {
       throw new Error(`Response status: ${response.status}`);
     }
-    const works = await response.json();
 
-    let filteredWorks; // Déclaration de la variable pour les œuvres filtrées
+    worksList = await response.json(); // Met à jour la liste des œuvres
+    let filteredWorks = worksList;
 
     if (filter) {
       // Si un filtre est appliqué (une catégorie spécifique)
-      filteredWorks = works.filter(work => work.categoryId === filter);
-    } else {
-      // Si aucun filtre n'est appliqué, on prend toutes les œuvres
-      filteredWorks = works;
+      filteredWorks = worksList.filter(work => work.categoryId === filter);
     }
 
     // Afficher les œuvres filtrées ou toutes les œuvres
@@ -55,6 +55,7 @@ async function fetchWorks(filter) {
 // Intégration à la galerie des figures (image + titre)
 function createGalleryFigure(work) {
   const figure = document.createElement("figure");
+  figure.id = work.id;
   figure.innerHTML = `<img src="${work.imageUrl}" alt="${work.title}">
                       <figcaption>${work.title}</figcaption>`;
   document.querySelector(".gallery").append(figure);
@@ -63,6 +64,7 @@ function createGalleryFigure(work) {
 // Intégration à la modale des figures (image + titre)
 function createModalFigure(work) {
   const figure = document.createElement("figure");
+  figure.id = "modal-" + work.id;
   figure.innerHTML = `<div class="image-container">
         <img src="${work.imageUrl}" alt="${work.title}">
         <figcaption>${work.title}</figcaption>
@@ -218,10 +220,26 @@ async function deleteWork(event) {
       return;
     }
 
+    // Suppression immédiate de l'élément de la galerie
     const workElement = document.getElementById(workId);
     if (workElement) {
       workElement.remove();
     }
+
+    // Suppression immédiate de l'élément de la modale
+    const modalWorkElement = document.getElementById("modal-" + workId);
+    if (modalWorkElement) {
+      modalWorkElement.remove();
+    }
+
+    // Mise à jour de la galerie et de la modale après suppression
+    worksList = worksList.filter(work => work.id !== parseInt(workId));
+    document.querySelector(".gallery").innerHTML = "";
+    document.querySelector(".modal-gallery").innerHTML = "";
+    worksList.forEach(work => {
+      createGalleryFigure(work);
+      createModalFigure(work);
+    });
 
     alert("L'œuvre a été supprimée avec succès !");
   } catch (error) {
@@ -229,6 +247,7 @@ async function deleteWork(event) {
     alert("Une erreur est survenue lors de la suppression de l'œuvre. Veuillez réessayer.");
   }
 }
+
 // Toggle entre les deux modales
 function toggleModal() {
   const galleryModal = document.querySelector(".gallery-modal");
